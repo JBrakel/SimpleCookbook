@@ -1,0 +1,25 @@
+{
+  "name": "Veggie Stir-Fry",
+  "category": "vegan",
+  "ingredients": [
+    "1 red bell pepper",
+    "1 carrot",
+    "100g broccoli florets",
+    "50g snow peas",
+    "2 cloves garlic",
+    "2 tbsp soy sauce",
+    "1 tbsp sesame oil",
+    "1 tsp grated ginger",
+    "Cooked rice for serving"
+  ],
+  "description": "A colorful and healthy stir-fry packed with vegetables and Asian-inspired flavors. Quick to prepare and fully plant-based.",
+  "instructions": [
+    "Slice all vegetables into thin strips.",
+    "Heat sesame oil in a large pan or wok over medium-high heat.",
+    "Add garlic and ginger, sauté for 30 seconds until fragrant.",
+    "Add all vegetables and stir-fry for 5–7 minutes until tender-crisp.",
+    "Pour in soy sauce and toss to coat evenly.",
+    "Serve hot with a side of cooked rice."
+  ],
+  "duration": 20
+}

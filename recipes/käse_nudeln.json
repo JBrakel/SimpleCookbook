@@ -1,0 +1,13 @@
+{
+    "name": "K\u00e4se Nudeln",
+    "category": "Vegetarian",
+    "duration": 10,
+    "ingredients": [
+        "Eier"
+    ],
+    "instructions": [
+        "buy ingredients",
+        "cook",
+        "eat"
+    ]
+}

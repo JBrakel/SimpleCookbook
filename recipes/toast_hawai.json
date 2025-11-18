@@ -1,0 +1,15 @@
+{
+    "name": "Toast Hawai",
+    "category": "Vegetarian",
+    "duration": 20,
+    "ingredients": [
+        "Toast",
+        "Annanas",
+        "K\u00e4se"
+    ],
+    "instructions": [
+        "Toast toasten",
+        "K\u00e4se \u00fcberbacken",
+        "Essen"
+    ]
+}

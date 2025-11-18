@@ -1,0 +1,14 @@
+{
+    "name": "Asian Food",
+    "category": "vegetarian",
+    "ingredients": [
+        "Milch"
+    ],
+    "description": "Eat fast.",
+    "instructions": [
+        "buy ingredients",
+        "cook",
+        "eat"
+    ],
+    "duration": 15
+}

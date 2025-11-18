@@ -1,0 +1,13 @@
+{
+    "name": "Salami Toast",
+    "category": "Meat",
+    "duration": 45,
+    "ingredients": [
+        "bla",
+        "bla",
+        "bla"
+    ],
+    "instructions": [
+        "blub"
+    ]
+}

@@ -1,0 +1,15 @@
+{
+    "name": "Spinat-Flammkuchen",
+    "category": "Vegetarian",
+    "duration": 45,
+    "ingredients": [
+        "Mehl",
+        "Butter",
+        "Teig"
+    ],
+    "instructions": [
+        "Kneten",
+        "Kochen",
+        "Backen"
+    ]
+}

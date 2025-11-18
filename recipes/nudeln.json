@@ -1,0 +1,10 @@
+{
+    "name": "Nudeln",
+    "category": "Fish",
+    "duration": 20,
+    "ingredients": [
+        "Kartoffeln",
+        "Nudeln"
+    ],
+    "instructions": []
+}

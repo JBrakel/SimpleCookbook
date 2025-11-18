@@ -1,0 +1,22 @@
+{
+    "name": "Chicken Salad",
+    "category": "",
+    "duration": 15,
+    "ingredients": [
+        "200g grilled chicken breast",
+        "1 cucumber",
+        "1 tomato",
+        "1/2 red onion",
+        "50g mixed greens (lettuce, spinach, arugula)",
+        "2 tbsp olive oil",
+        "1 tbsp lemon juice",
+        "Salt and pepper to taste"
+    ],
+    "instructions": [
+        "Grill or pan-fry the chicken breast until fully cooked, then slice into thin strips.",
+        "Chop cucumber, tomato, and red onion into bite-sized pieces.",
+        "In a large bowl, combine greens, chopped vegetables, and sliced chicken.",
+        "Drizzle olive oil and lemon juice over the salad.",
+        "Season with salt and pepper, toss well, and serve fresh."
+    ]
+}

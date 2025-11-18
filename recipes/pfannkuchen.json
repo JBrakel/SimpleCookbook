@@ -1,0 +1,19 @@
+{
+  "name": "Pfannkuchen",
+  "category": "vegetarian",
+  "ingredients": [
+    "200g pasta",
+    "2 tomatoes",
+    "2 cloves garlic",
+    "olive oil",
+    "salt and pepper"
+  ],
+  "description": "A quick, light Italian dish perfect for weeknights.",
+  "instructions": [
+    "Boil pasta until al dente.",
+    "Sauté garlic in olive oil.",
+    "Add chopped tomatoes, salt, and pepper.",
+    "Mix pasta with sauce and serve hot."
+  ],
+  "duration": 40
+}
