@@ -4,6 +4,9 @@ import os
 import pandas as pd
 import random
 
+import base64
+import requests
+
 # TODO delete old recipe when adjusting
 # TODO add delete button
 # TODO generate desktop icon
@@ -38,6 +41,89 @@ def classify_duration(minutes: int) -> str:
         return "Medium"
     else:
         return "Long"
+
+def upload_to_github(file_path, content_string):
+    """
+    Uploads or updates a file in the GitHub repo using the GitHub API.
+    """
+
+    token = st.secrets["GITHUB_TOKEN"]
+    repo = st.secrets["GITHUB_REPO"]
+    branch = st.secrets.get("GITHUB_BRANCH", "main")
+
+    url = f"https://api.github.com/repos/{repo}/contents/{file_path}"
+
+    # Check if file already exists (for update)
+    get_response = requests.get(
+        url,
+        headers={"Authorization": f"Bearer {token}"}
+    )
+
+    if get_response.status_code == 200:
+        sha = get_response.json()["sha"]
+    else:
+        sha = None
+
+    # Prepare payload for GitHub API
+    payload = {
+        "message": f"Update {file_path}",
+        "content": base64.b64encode(content_string.encode()).decode(),
+        "branch": branch
+    }
+
+    if sha:
+        payload["sha"] = sha
+
+    # Upload
+    put_response = requests.put(
+        url,
+        headers={"Authorization": f"Bearer {token}"},
+        json=payload
+    )
+
+    if put_response.status_code not in (200, 201):
+        st.error(f"❌ Error uploading to GitHub: {put_response.text}")
+    else:
+        st.success(f"📤 Synced {file_path} to GitHub")
+
+def delete_from_github(file_path):
+    """
+    Deletes a file from the GitHub repo using the GitHub API.
+    """
+    token = st.secrets["GITHUB_TOKEN"]
+    repo = st.secrets["GITHUB_REPO"]
+    branch = st.secrets.get("GITHUB_BRANCH", "main")
+
+    url = f"https://api.github.com/repos/{repo}/contents/{file_path}"
+
+    # Get SHA of the file (required for deletion)
+    get_response = requests.get(
+        url,
+        headers={"Authorization": f"Bearer {token}"}
+    )
+
+    if get_response.status_code != 200:
+        st.warning(f"File {file_path} not found on GitHub.")
+        return
+
+    sha = get_response.json()["sha"]
+
+    payload = {
+        "message": f"Delete {file_path}",
+        "sha": sha,
+        "branch": branch
+    }
+
+    delete_response = requests.delete(
+        url,
+        headers={"Authorization": f"Bearer {token}"},
+        json=payload
+    )
+
+    if delete_response.status_code not in (200, 201):
+        st.error(f"❌ Error deleting from GitHub: {delete_response.text}")
+    else:
+        st.success(f"🗑️ Deleted {file_path} from GitHub")
 
 # -----------------------------------------------
 
@@ -201,6 +287,11 @@ if st.session_state.get("show_add_recipe", False):
                 with open(file_path, "w") as f:
                     json.dump(recipe_data, f, indent=4)
 
+                upload_to_github(
+                    file_path=f"recipes/{name.lower().replace(' ', '_')}.json",
+                    content_string=json.dumps(recipe_data, indent=4)
+                )
+
                 st.success(f"Saved {name}!")
 
                 # Update session state
@@ -298,6 +389,11 @@ elif st.session_state.get("selected_recipe", None):
                     with open(new_file_path, "w") as f:
                         json.dump(updated_recipe, f, indent=4)
 
+                    upload_to_github(
+                        file_path=f"recipes/{name.lower().replace(' ', '_')}.json",
+                        content_string=json.dumps(updated_recipe, indent=4)
+                    )
+
                     if old_file_path != new_file_path and os.path.exists(old_file_path):
                         os.remove(old_file_path)
 
@@ -319,10 +415,13 @@ elif st.session_state.get("selected_recipe", None):
             with confirm_cols[0]:
                 if st.button("Yes", key=f"confirm_delete_{recipe_name}", width="stretch"):
                     file_name = f"{recipe_name.lower().replace(' ', '_')}.json"
+
                     if delete_recipe(file_name):
-                        st.success(f"Deleted {recipe_name}")
+                        # st.success(f"Deleted {recipe_name}")
                         st.session_state.selected_recipe = None
                         recipes = load_recipes()
+
+                    delete_from_github(f"recipes/{file_name}")
 
                     # Hide overlay before rerun
                     st.session_state.show_delete_confirm = False
