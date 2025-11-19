@@ -24,6 +24,13 @@ def load_recipes():
                     st.warning(f"Could not read {file}")
     return recipes
 
+def delete_recipe(file_name: str):
+    file_path = os.path.join(RECIPE_DIR, file_name)
+    if os.path.exists(file_path):
+        os.remove(file_path)
+        return True
+    return False
+
 def classify_duration(minutes: int) -> str:
     if minutes < 15:
         return "Short"
@@ -66,12 +73,6 @@ selected_durations = st.sidebar.multiselect("Filter by Duration", options=ALLOWE
 
 # --- Sidebar: sort recipes ---
 sort_field = st.sidebar.selectbox("Sorted by", options=["Name", "Category", "Duration"], index=0)
-
-# Apply filters
-# filtered_df = recipe_df[
-#     recipe_df["Category"].isin(selected_cats) &
-#     recipe_df["Duration"].isin(selected_durations)
-# ]
 
 if recipe_df.empty:
     st.sidebar.info("No recipes found.")
@@ -169,68 +170,7 @@ for idx, row in filtered_df.iterrows():
             unsafe_allow_html=True
         )
 
-# # --- Main page ---
-# if st.session_state.get("show_add_recipe", False):
-#     # Show Add Recipe form
-#     st.title("➕ Add a new recipe")
-#     name = st.text_input("Recipe name", key="new_name")
-#     category = st.selectbox("Category", [""] + ALLOWED_CATEGORIES, key="new_category")
-#     duration = st.number_input("Duration (min)", min_value=1, max_value=500, value=20, step=1, key="new_duration")
-#     ingredients = st.text_area("Ingredients (one per line)", key="new_ingredients").splitlines()
-#     instructions = st.text_area("Instructions (one per line)", key="new_instructions").splitlines()
-#
-#     if st.button("Save recipe"):
-#         if not name:
-#             st.error("Recipe name required.")
-#         elif category == "":
-#             st.error("Category required.")
-#         else:
-#             # Save the recipe
-#             recipe_data = {
-#                 "name": name,
-#                 "category": category,
-#                 "duration": duration,
-#                 "ingredients": ingredients,
-#                 "instructions": instructions
-#             }
-#             file_path = os.path.join(RECIPE_DIR, f"{name.lower().replace(' ', '_')}.json")
-#             with open(file_path, "w") as f:
-#                 json.dump(recipe_data, f, indent=4)
-#             st.success(f"Saved {name}!")
-#
-#             # --- Update session state to show the new recipe ---
-#             st.session_state.selected_recipe = name
-#             st.session_state.show_add_recipe = False
-#
-#             # --- Rerun the app to clear inputs and show the new recipe page ---
-#             st.rerun()
-#
-# elif st.session_state.get("selected_recipe", None):
-#     recipe_name = st.session_state.selected_recipe
-#     recipe = next(r for r in recipes if r["name"] == recipe_name)
-#
-#     # Display a success message above the header if this was randomly selected
-#     if st.session_state.get("just_random", False):
-#         st.success(f"🎉 Your random recipe for today: **{recipe_name}**")
-#         st.session_state["just_random"] = False  # only show once
-#
-#     st.title(recipe["name"])
-#
-#     category = recipe.get("category", "N/A")
-#     duration = recipe.get("duration", "N/A")
-#     st.markdown(
-#         f"<div style='font-size:16px; color:gray;'>{category} | {duration} min</div>",
-#         unsafe_allow_html=True
-#     )
-#
-#     st.subheader("Ingredients")
-#     st.markdown("\n".join(f"- {i}" for i in recipe.get("ingredients", [])))
-#     st.subheader("Instructions")
-#     for step in recipe.get("instructions", []):
-#         st.write(f"✅ {step}")
-
 # --- Main page: Add / View / Edit recipe ---
-
 # --- Add new recipe ---
 if st.session_state.get("show_add_recipe", False):
     st.title("➕ Add a new recipe")
@@ -241,32 +181,34 @@ if st.session_state.get("show_add_recipe", False):
     ingredients = st.text_area("Ingredients (one per line)", key="new_ingredients").splitlines()
     instructions = st.text_area("Instructions (one per line)", key="new_instructions").splitlines()
 
-    if st.button("Save recipe"):
-        if not name:
-            st.error("Recipe name required.")
-        elif category == "":
-            st.error("Category required.")
-        else:
-            # Save new recipe
-            recipe_data = {
-                "name": name,
-                "category": category,
-                "duration": duration,
-                "ingredients": ingredients,
-                "instructions": instructions
-            }
-            file_path = os.path.join(RECIPE_DIR, f"{name.lower().replace(' ', '_')}.json")
-            with open(file_path, "w") as f:
-                json.dump(recipe_data, f, indent=4)
+    cols = st.columns([0.7, 0.7, 7])
+    with cols[0]:
+        if st.button("Save", width="stretch"):
+            if not name:
+                st.error("Recipe name required.")
+            elif category == "":
+                st.error("Category required.")
+            else:
+                # Save new recipe
+                recipe_data = {
+                    "name": name,
+                    "category": category,
+                    "duration": duration,
+                    "ingredients": ingredients,
+                    "instructions": instructions
+                }
+                file_path = os.path.join(RECIPE_DIR, f"{name.lower().replace(' ', '_')}.json")
+                with open(file_path, "w") as f:
+                    json.dump(recipe_data, f, indent=4)
 
-            st.success(f"Saved {name}!")
+                st.success(f"Saved {name}!")
 
-            # Update session state
-            st.session_state.selected_recipe = name
-            st.session_state.show_add_recipe = False
+                # Update session state
+                st.session_state.selected_recipe = name
+                st.session_state.show_add_recipe = False
 
-            # Rerun to refresh
-            st.rerun()
+                # Rerun to refresh
+                st.rerun()
 
 
 # --- View / Edit existing recipe ---
@@ -284,6 +226,11 @@ elif st.session_state.get("selected_recipe", None):
     category = recipe.get("category", "N/A")
     duration = recipe.get("duration", "N/A")
     st.markdown(f"<div style='font-size:16px; color:gray;'>{category.capitalize()} | {duration} min</div>", unsafe_allow_html=True)
+
+    # --- If flagged, leave edit mode after saving ---
+    if st.session_state.get("leave_edit_mode", False):
+        st.session_state.show_edit_recipe = False
+        del st.session_state["leave_edit_mode"]
 
     # --- Checkbox to toggle edit mode ---
     st.checkbox("✏️ Edit Mode", key="show_edit_recipe")
@@ -326,44 +273,66 @@ elif st.session_state.get("selected_recipe", None):
             key="edit_instructions"
         ).splitlines()
 
-        if st.button("Save changes"):
-            # Validate inputs
-            if not name.strip():
-                st.error("Recipe name required.")
-            elif category == "":
-                st.error("Category required.")
-            else:
-                # Paths for old and new files
-                old_file_path = os.path.join(RECIPE_DIR, f"{recipe_name.lower().replace(' ', '_')}.json")
-                new_file_path = os.path.join(RECIPE_DIR, f"{name.lower().replace(' ', '_')}.json")
+        # --- Buttons in one row: Save + Delete ---
+        cols = st.columns([0.7, 0.7, 7])  # first two columns same size, third fills space
 
-                # Updated recipe data
-                updated_recipe = {
-                    "name": name,
-                    "category": category,
-                    "duration": duration,
-                    "ingredients": ingredients,
-                    "instructions": instructions
-                }
+        with cols[0]:
+            if st.button("Save", key=f"save_{recipe_name}", width="stretch"):
+                # Validate inputs
+                if not name.strip():
+                    st.error("Recipe name required.")
+                elif category == "":
+                    st.error("Category required.")
+                else:
+                    old_file_path = os.path.join(RECIPE_DIR, f"{recipe_name.lower().replace(' ', '_')}.json")
+                    new_file_path = os.path.join(RECIPE_DIR, f"{name.lower().replace(' ', '_')}.json")
 
-                # Save new file
-                with open(new_file_path, "w") as f:
-                    json.dump(updated_recipe, f, indent=4)
+                    updated_recipe = {
+                        "name": name,
+                        "category": category,
+                        "duration": duration,
+                        "ingredients": ingredients,
+                        "instructions": instructions
+                    }
 
-                # Delete old file if name changed
-                if old_file_path != new_file_path and os.path.exists(old_file_path):
-                    os.remove(old_file_path)
+                    with open(new_file_path, "w") as f:
+                        json.dump(updated_recipe, f, indent=4)
 
-                st.success(f"Updated recipe: {name}")
-                st.session_state.selected_recipe = name
+                    if old_file_path != new_file_path and os.path.exists(old_file_path):
+                        os.remove(old_file_path)
 
-                # --- Reset edit mode safely ---
-                if "show_edit_recipe" in st.session_state:
-                    del st.session_state["show_edit_recipe"]
+                    st.success(f"Updated recipe: {name}")
+                    st.session_state.selected_recipe = name
+                    recipes = load_recipes()
+                    st.session_state["leave_edit_mode"] = True
+                    st.rerun()
 
-                # Reload recipes
-                recipes = load_recipes()
-                st.rerun()
+        with cols[1]:
+            if st.button("Delete", key=f"delete_{recipe_name}", width="stretch"):
+                st.session_state.show_delete_confirm = True
+
+        # --- Delete confirmation overlay ---
+        if st.session_state.get("show_delete_confirm", False):
+            st.warning(f"⚠️ Delete **{recipe_name}**? This cannot be undone.")
+
+            confirm_cols = st.columns([0.7, 0.7, 7])
+            with confirm_cols[0]:
+                if st.button("Yes", key=f"confirm_delete_{recipe_name}", width="stretch"):
+                    file_name = f"{recipe_name.lower().replace(' ', '_')}.json"
+                    if delete_recipe(file_name):
+                        st.success(f"Deleted {recipe_name}")
+                        st.session_state.selected_recipe = None
+                        recipes = load_recipes()
+
+                    # Hide overlay before rerun
+                    st.session_state.show_delete_confirm = False
+                    st.rerun()
+
+            with confirm_cols[1]:
+                if st.button("No", key=f"cancel_delete_{recipe_name}", width="stretch"):
+                    # Hide overlay immediately
+                    st.session_state.show_delete_confirm = False
+                    st.rerun()  # or st.rerun() in latest Streamlit
 
     else:
         # Display recipe normally
