@@ -10,6 +10,7 @@ import random
 # TODO add rectangle around filter and sorting
 # TODO create git repo
 # TODO add image instead of text fields
+# TODO automatic push when saving new recipe
 
 # --- Load recipes ---
 def load_recipes():
@@ -67,10 +68,19 @@ selected_durations = st.sidebar.multiselect("Filter by Duration", options=ALLOWE
 sort_field = st.sidebar.selectbox("Sorted by", options=["Name", "Category", "Duration"], index=0)
 
 # Apply filters
-filtered_df = recipe_df[
-    recipe_df["Category"].isin(selected_cats) &
-    recipe_df["Duration"].isin(selected_durations)
-]
+# filtered_df = recipe_df[
+#     recipe_df["Category"].isin(selected_cats) &
+#     recipe_df["Duration"].isin(selected_durations)
+# ]
+
+if recipe_df.empty:
+    st.sidebar.info("No recipes found.")
+    filtered_df = pd.DataFrame(columns=["Name", "Category", "Duration"])
+else:
+    filtered_df = recipe_df[
+        recipe_df["Category"].isin(selected_cats) &
+        recipe_df["Duration"].isin(selected_durations)
+    ]
 
 if search_query:
     q = search_query.strip().lower()  # lowercase for case-insensitive search
@@ -362,3 +372,20 @@ elif st.session_state.get("selected_recipe", None):
         st.subheader("Instructions")
         for step in recipe.get("instructions", []):
             st.write(f"✅ {step}")
+
+
+#### Example recipe
+# {
+#     "name": "Asian Food",
+#     "category": "vegetarian",
+#     "ingredients": [
+#         "Milch"
+#     ],
+#     "description": "Eat fast.",
+#     "instructions": [
+#         "buy ingredients",
+#         "cook",
+#         "eat"
+#     ],
+#     "duration": 15
+# }
