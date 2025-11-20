@@ -134,7 +134,7 @@ ALLOWED_DURATIONS = ["Short", "Medium", "Long"]
 
 RECIPE_DIR = "recipes"
 os.makedirs(RECIPE_DIR, exist_ok=True)
-st.set_page_config(page_title="My Cookbook", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="Simple Cookbook", layout="wide", initial_sidebar_state="expanded")
 
 recipes = load_recipes()
 recipe_names = [r["name"] for r in recipes]
@@ -148,7 +148,7 @@ recipe_df = pd.DataFrame([{
 } for r in recipes])
 
 # --- Sidebar: search + filter ---
-st.sidebar.title("🥘 My Cookbook Sidebar")
+st.sidebar.title("🥘Simple Cookbook Sidebar")
 search_query = st.sidebar.text_input("🔍 Search recipes")
 
 # Multi-select for categories
@@ -158,7 +158,7 @@ selected_cats = st.sidebar.multiselect("Filter by Category", options=ALLOWED_CAT
 selected_durations = st.sidebar.multiselect("Filter by Duration", options=ALLOWED_DURATIONS, default=ALLOWED_DURATIONS)
 
 # --- Sidebar: sort recipes ---
-sort_field = st.sidebar.selectbox("Sorted by", options=["Name", "Category", "Duration"], index=0)
+# sort_field = st.sidebar.selectbox("Sorted by", options=["Name", "Category", "Duration"], index=0)
 
 if recipe_df.empty:
     st.sidebar.info("No recipes found.")
@@ -188,14 +188,61 @@ if search_query:
     mask = filtered_df.apply(row_matches, axis=1)
     filtered_df = filtered_df[mask]
 
-# --- Apply sorting ---
-if sort_field == "Duration":
-    # Map classified duration to numeric order for correct ascending sort
-    duration_order = {"Short": 0, "Medium": 1, "Long": 2}
-    filtered_df["Duration_order"] = filtered_df["Duration"].map(duration_order)
-    filtered_df = filtered_df.sort_values(by="Duration_order", ascending=True).drop(columns=["Duration_order"])
-else:
-    filtered_df = filtered_df.sort_values(by=sort_field, ascending=True)
+# --- Top-right buttons (Random Recipe + New Recipe) ---
+
+# CSS to place the top bar
+st.markdown("""
+    <style>
+        .top-right-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            padding: 10px 5px;
+        }
+    </style>
+""", unsafe_allow_html=True)
+
+top_bar = st.container()
+with top_bar:
+    st.markdown('<div class="top-right-buttons">', unsafe_allow_html=True)
+
+    cols_top = st.columns([7, 1, 1])
+
+    with cols_top[1]:
+        if st.button("➕ New", key="top_new", width="stretch"):
+            st.session_state.show_add_recipe = True
+            st.session_state.selected_recipe = None
+
+    with cols_top[2]:
+        if st.button("🎲 Random", key="top_random", width="stretch"):
+            if len(filtered_df) > 0:
+                random_recipe = random.choice(filtered_df["Name"].tolist())
+                st.session_state.selected_recipe = random_recipe
+                st.session_state.show_add_recipe = False
+                st.session_state.random_message = f"🎉 Your random recipe for today: **{random_recipe}**"
+            else:
+                st.warning("No recipes found for this filter.")
+
+    st.markdown('</div>', unsafe_allow_html=True)
+
+
+# # --- Apply sorting ---
+# if sort_field == "Duration":
+#     # Map classified duration to numeric order for correct ascending sort
+#     duration_order = {"Short": 0, "Medium": 1, "Long": 2}
+#     filtered_df["Duration_order"] = filtered_df["Duration"].map(duration_order)
+#     filtered_df = filtered_df.sort_values(by="Duration_order", ascending=True).drop(columns=["Duration_order"])
+# else:
+#     filtered_df = filtered_df.sort_values(by=sort_field, ascending=True)
+
+# --- Always sort by Name → Category → Duration ---
+duration_order = {"Short": 0, "Medium": 1, "Long": 2}
+filtered_df["Duration_order"] = filtered_df["Duration"].map(duration_order)
+
+filtered_df = filtered_df.sort_values(
+    by=["Name", "Category", "Duration_order"],
+    ascending=[True, True, True]
+).drop(columns=["Duration_order"])
 
 
 # --- Set a random recipe as initial page if none selected ---
@@ -206,23 +253,23 @@ if "selected_recipe" not in st.session_state and not st.session_state.get("show_
     else:
         st.session_state.selected_recipe = None
 
-# --- Sidebar: buttons in the same row ---
-col1, col2 = st.sidebar.columns([1, 1])  # Two equal columns
-
-with col1:
-    if st.button("🎲 Random Recipe", width="stretch"):
-        if len(filtered_df) > 0:
-            random_recipe = random.choice(filtered_df["Name"].tolist())
-            st.session_state.selected_recipe = random_recipe
-            st.session_state.show_add_recipe = False
-            st.session_state.random_message = f"🎉 Your random recipe for today: **{random_recipe}**"
-        else:
-            st.sidebar.warning("No recipes found for this filter.")
-
-with col2:
-    if st.button("➕ New Recipe", width="stretch"):
-        st.session_state.show_add_recipe = True
-        st.session_state.selected_recipe = None
+# # --- Sidebar: buttons in the same row ---
+# col1, col2 = st.sidebar.columns([1, 1])  # Two equal columns
+#
+# with col1:
+#     if st.button("🎲 Random Recipe", width="stretch"):
+#         if len(filtered_df) > 0:
+#             random_recipe = random.choice(filtered_df["Name"].tolist())
+#             st.session_state.selected_recipe = random_recipe
+#             st.session_state.show_add_recipe = False
+#             st.session_state.random_message = f"🎉 Your random recipe for today: **{random_recipe}**"
+#         else:
+#             st.sidebar.warning("No recipes found for this filter.")
+#
+# with col2:
+#     if st.button("➕ New Recipe", width="stretch"):
+#         st.session_state.show_add_recipe = True
+#         st.session_state.selected_recipe = None
 
 # --- Sidebar: clickable recipe list ---
 st.sidebar.subheader("Recipes")
@@ -307,10 +354,16 @@ elif st.session_state.get("selected_recipe", None):
     recipe_name = st.session_state.selected_recipe
     recipe = next(r for r in recipes if r["name"] == recipe_name)
 
+    with top_bar:
+        with cols_top[0]:
+            if st.session_state.get("just_random", False):
+                st.success(f"🎉 Your random recipe for today: **{recipe_name}**")
+                st.session_state["just_random"] = False
+
     # Display random recipe message if applicable
-    if st.session_state.get("just_random", False):
-        st.success(f"🎉 Your random recipe for today: **{recipe_name}**")
-        st.session_state["just_random"] = False
+    # if st.session_state.get("just_random", False):
+    #     st.success(f"🎉 Your random recipe for today: **{recipe_name}**")
+    #     st.session_state["just_random"] = False
 
     st.title(recipe["name"])
 
