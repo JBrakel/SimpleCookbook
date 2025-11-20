@@ -1,7 +1,7 @@
 import qrcode
 
 # Your GitHub Pages URL
-url = "https://simplecookbook.streamlit.app/"
+url = "https://simplecookbook.streamlit.app"
 
 # Generate the QR code
 qr = qrcode.QRCode(
