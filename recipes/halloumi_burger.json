@@ -2,7 +2,14 @@
     "name": "Halloumi Burger",
     "category": "Vegetarian",
     "duration": 20,
-    "ingredients": [],
+    "ingredients": [
+        "Zucchini",
+        "M\u00f6hren",
+        "Rucola",
+        "Halloumi",
+        "Burgerbr\u00f6tchen",
+        "Avocado Dip"
+    ],
     "instructions": [
         "https://www.einfachkochen.de/rezepte/halloumi-burger-einfach-selber-machen"
     ]
