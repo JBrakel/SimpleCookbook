@@ -2,7 +2,16 @@
     "name": "Hokkaido-Kartoffel-Auflauf",
     "category": "Vegetarian",
     "duration": 75,
-    "ingredients": [],
+    "ingredients": [
+        "1/2 Hokkaido",
+        "600 g Kartoffeln",
+        "2 Knoblauchzehen",
+        "200 ml Sahne",
+        "200 g Emmentaler",
+        "250 ml Vollmilch",
+        "1 eingelegte Tomaten",
+        "100 g Kr\u00e4uterfrischk\u00e4se"
+    ],
     "instructions": [
         "https://emmikochteinfach.de/kuerbisauflauf-mit-kartoffeln/"
     ]
